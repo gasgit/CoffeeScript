@@ -33,12 +33,12 @@ populateTables = (callback) ->
   ]
 
   for item in sections
-    sql = "INSERT INTO [Sections] VALUES (?,?)"
+    sql = "insert into [Sections] values (?,?)"
     db.run sql,item.id, item.description, (err) ->
       callback err if err?
 
   for item in people
-    sql = "INSERT INTO [People] VALUES (?,?,?,?)"
+    sql = "insert into [People] values (?,?,?,?)"
     db.run sql, item.id, item.first_name, item.last_name, (err) ->
       callback err if err?
 
@@ -54,10 +54,60 @@ populateTables = (callback) ->
 #         console.log err
 
 
-sql = "SELECT * FROM People"
-db.all sql, (err, rows) ->
+selectAll = (callback) ->
+  sql = "select * from People"
+  db.all sql, (err, rows) ->
+    unless err?
+      for row in rows
+        console.log " ID: #{row.id}: FIRST: #{row.first_name}: LAST: #{row.last_name}"
+    else
+      console.log err
+      callback()
+
+selectCount = (callback) ->
+  sql = "select count (*) as 'count'from sections "
+  db.get sql, (err, row) ->
+    unless err?
+      console.log "There are #{row.count} rows in sections table!"
+    else
+      console.log err
+      callback()
+
+
+orderFirst = (callback) ->
+
+  sql = "select * from people order by first_name"
+  db.all sql, (err, rows) ->
+    unless err?
+      console.log "There are #{rows.length} in people table"
+      for row in rows
+        console.log "#{row.id}: #{row.first_name}"
+    else
+      console.log err
+
+
+
+orderDesc = (callback) ->
+  sql = "select * from Sections order by description"
+  db.each sql, (err, row) ->
+    unless err?
+        console.log "#{row.id}: #{row.description}"
+    else
+      console.log err
+
+
+join = (callback) ->
+
+  sql = "select description, first_name, last_name from sections cross join people"
+  db.each sql, (err, row) ->
+    unless err?
+      console.log "#{row.description}: #{row.first_name}: #{row.last_name}"
+    else
+      console.log err
+      callback()
+
+
+selectAll (err) ->
   unless err?
-    for row in rows
-      console.log " ID: #{row.id}: FIRST: #{row.first_name}: LAST: #{row.last_name}"
   else
     console.log err
